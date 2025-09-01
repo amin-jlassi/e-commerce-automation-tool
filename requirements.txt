@@ -1,1 +1,6 @@
-flask 
+flask
+transformers
+sqlalchemy
+sqlcodegen
+dotenv
+flask_sqlalchemy
