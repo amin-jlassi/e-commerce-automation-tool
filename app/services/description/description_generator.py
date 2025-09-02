@@ -1,7 +1,10 @@
 from openai import OpenAI
 import os
 import json
-from App.config import API_KEY 
+import dotenv
+
+dotenv.load_dotenv()
+API_KEY = os.getenv("OPENAI_API_KEY")
 
 client = OpenAI(api_key=API_KEY)
 
