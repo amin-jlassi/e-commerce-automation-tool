@@ -15,6 +15,6 @@ def classify(product_name) :
     res = [{labels[i]:scores[i]} for i in range(len(scores))]
     return res[0]
 
-print(classify("nike air force 1 "))
+print(classify("nike air force 1"))
 end = datetime.now()
 print(f"Time taken: {end - start}")

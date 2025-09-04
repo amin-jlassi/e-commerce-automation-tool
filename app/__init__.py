@@ -25,6 +25,8 @@ def create_app() :
     
 
     from app.routes.classifier_api import classification_bp
+    from app.routes.intergration import integration_bp
     app.register_blueprint(classification_bp , url_prefix='/classification')
+    app.register_blueprint(integration_bp , url_prefix='/integration')
 
     return app 
