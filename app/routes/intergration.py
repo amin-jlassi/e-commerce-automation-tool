@@ -3,6 +3,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 from services.classification.zero_shot_classifier import classify
 from services.description.description_generator import generate_description
+from app import Products , db
 
 
 integration_bp = Blueprint('integration', __name__)
@@ -42,6 +43,30 @@ def create_woo_commerce_product() :
 
 @integration_bp.route('/custom_site/add_product', methods=['POST'])
 def create_custom_site_product() : 
-    
 
-    pass
+    product_name = request.json.get('productName')
+    classification = classify(product_name=product_name)
+    attr = ["White", "Leather", "Unisex", "Classic design"]
+    description = generate_description(product_name , category=classification["category"] , attributes=attr )
+    product_data = {
+        "product_name" : product_name , 
+        "category" : classification["category"] , 
+        "description" :  description , 
+        "image_url" : None
+    }
+
+
+    try : 
+        new_product = Products(
+            name = product_data.get("product_name") , 
+            category = product_data.get("category") , 
+            #description = product_data.get("description") , 
+            img_url = "none" 
+        )
+        db.session.add(new_product)
+        db.session.commit()
+    except Exception as e : 
+        return jsonify({"msg" : "product addition failed !" , "eror" : str(e)}) , 500
+    else : 
+        return jsonify({"msg" : "product added succesfuly"}) , 201
+    
