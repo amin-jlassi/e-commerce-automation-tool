@@ -1,7 +1,6 @@
 from flask import Blueprint , request, jsonify
 import requests 
 from requests.auth import HTTPBasicAuth
-
 from services.classification.zero_shot_classifier import classify
 
 
