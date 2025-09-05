@@ -1,17 +1,27 @@
-from openai import OpenAI
+from flask import Flask, request, render_template, jsonify
 import os
 import json
-from App.config import API_KEY 
+import dotenv
+from openai import OpenAI
 
+app = Flask(__name__)
+
+
+dotenv.load_dotenv()
+API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=API_KEY)
 
 def generate_description(name, category, attributes, tone="professional"):
     prompt = f"""
-    Write a {tone} e-commerce site description for this product:
+    Write a {tone} e-commerce description for this product:
     Product: {name}
     Category: {category}
     Attributes: {', '.join(attributes)}
-    Please respond only in JSON format.
+
+    Respond ONLY in JSON with this exact format:
+    {{
+      "description": "..."
+    }}
     """
 
     response = client.chat.completions.create(
@@ -21,12 +31,33 @@ def generate_description(name, category, attributes, tone="professional"):
         response_format={"type": "json_object"}
     )
 
-    return json.loads(response.choices[0].message.content.strip())
+    try:
+        return json.loads(response.choices[0].message.content.strip())["description"]
+    except (KeyError, json.JSONDecodeError):
+        return "Error: Unable to parse response."
 
-# Example 97boun
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/generate', methods=['POST'])
+def generate():
+    
+    name = request.form.get('name')
+    category = request.form.get('category')
+    attributes = request.form.get('attributes').split(',')  # Split attributes by comma
+    tone = request.form.get('tone', 'professional')  # Default to professional if not provided
+
+    
+    if not name or not category or not attributes:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    
+    attributes = [attr.strip() for attr in attributes if attr.strip()]
+
+    
+    description = generate_description(name, category, attributes, tone)
+    return jsonify({"description": description})
+
 if __name__ == "__main__":
-    print(generate_description(
-        "Nike Air Force 1",
-        "Shoes > Sneakers",
-        ["White", "Leather", "Unisex", "Classic design"]
-    ))
+    app.run(debug=True)
