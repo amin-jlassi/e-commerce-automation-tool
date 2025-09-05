@@ -2,6 +2,7 @@ from flask import Blueprint , request, jsonify
 import requests 
 from requests.auth import HTTPBasicAuth
 from services.classification.zero_shot_classifier import classify
+from services.description.description_generator import generate_description
 
 
 integration_bp = Blueprint('integration', __name__)
@@ -9,7 +10,18 @@ integration_bp = Blueprint('integration', __name__)
 @integration_bp.route('/woo_commerce/add_product', methods=['POST'])
 def create_woo_commerce_product() : 
     
-    product_data = None
+    product_name = request.json.get('productName')
+    classification = classify(product_name=product_name)
+    attr = ["White", "Leather", "Unisex", "Classic design"]
+    description = generate_description(product_name , category=classification["category"] , attributes=attr )
+    product_data = {
+        "product_name" : product_name , 
+        "category" : classification["category"] , 
+        "description" :  description , 
+        "image_url" : None
+    }
+
+    #return jsonify({"category" : classification , "desc" : description})
 
 
     domain = request.json.get('domain')

@@ -1,1 +1,0 @@
-from description_generator import generate_description
