@@ -5,3 +5,4 @@ __pycache__/
 venv/
 .env
 instance/
+demo_database.sqlite
