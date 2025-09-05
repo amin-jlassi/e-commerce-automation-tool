@@ -26,7 +26,7 @@ def generate_description(name, category, attributes, tone="professional"):
 
     return json.loads(response.choices[0].message.content.strip())
 
-# Example 97boun
+
 if __name__ == "__main__":
     print(generate_description(
         "Nike Air Force 1",
