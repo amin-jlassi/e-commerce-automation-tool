@@ -2,12 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, parse_qs
 import os
-import json
 import dotenv
 from openai import OpenAI
-from PIL import Image
-import io
-import base64
 
 dotenv.load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY")
@@ -81,46 +77,31 @@ def verify_image_url(image_url, product_name):
         print(f"Error verifying image: {e}")
         return False
 
-def get_suitable_processed_image(product_name, min_width=800, upscale_factor=2, max_size=50 * 1024 * 1024):  # 50MB, adjust as needed (user might mean 50KB?)
+def get_suitable_processed_image(product_name):
     """
-    Get a suitable processed image as base64 data URL.
+    Get a suitable image URL for the product.
     
     Args:
         product_name (str): Name of the product
-        min_width (int): Minimum width before upscaling (default: 800)
-        upscale_factor (int): Factor to upscale if below min_width (default: 2)
-        max_size (int): Maximum file size in bytes (default: 50MB)
     
     Returns:
-        str: Data URL of the processed image or original URL if processing fails, or None if no image found
+        str: URL of the suitable image, or None if no suitable image is found
     """
     urls = get_original_image_urls(product_name, 5)
     for url in urls:
         if verify_image_url(url, product_name):
             try:
                 headers = {"User-Agent": "Mozilla/5.0"}
-                resp = requests.get(url, headers=headers, timeout=10)
+                resp = requests.head(url, headers=headers, timeout=10)
                 if resp.status_code == 200:
-                    img = Image.open(io.BytesIO(resp.content))
-                    
-                    if img.width < min_width:
-                        new_size = (img.width * upscale_factor, img.height * upscale_factor)
-                        img = img.resize(new_size, Image.LANCZOS)
-                   
-                    quality = 95
-                    while True:
-                        bio = io.BytesIO()
-                        img.save(bio, 'JPEG', quality=quality)
-                        data = bio.getvalue()
-                        if len(data) <= max_size or quality < 20:
-                            break
-                        quality -= 5
-                    
-                    b64 = base64.b64encode(data).decode('utf-8')
-                    return f"data:image/jpeg;base64,{b64}"
+                    return url
             except Exception as e:
-                print(f"Error processing image {url}: {e}")
-                
+                print(f"Error checking image {url}: {e}")
+    
     if urls:
-        return urls[0]
+        return urls[0]  # Fallback to the first URL if no suitable image is found
     return None
+if __name__ == "__main__":
+    product = "wireless headphones"
+    image_url = get_suitable_processed_image(product)
+    print(image_url)
