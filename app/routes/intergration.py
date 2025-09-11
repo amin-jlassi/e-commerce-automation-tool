@@ -5,6 +5,8 @@ from services.classification.zero_shot_classifier import classify
 from services.description.description_generator import generate_description
 from app import Products , db
 
+from services.image.image_fetch import fetch_image, google_search_api
+
 
 integration_bp = Blueprint('integration', __name__)
 
@@ -14,12 +16,13 @@ def create_woo_commerce_product() :
     product_name = request.json.get('productName')
     classification = classify(product_name=product_name)
     attr = ["White", "Leather", "Unisex", "Classic design"]
-    description = generate_description(product_name , category=classification["category"] , attributes=attr )
+    description = generate_description(product_name , category=classification["category"] , attributes=attr)
+    image = fetch_image(product_name , num=1)[0]
     product_data = {
         "product_name" : product_name , 
         "category" : classification["category"] , 
         "description" :  description , 
-        "image_url" : None
+        "image_url" : image
     }
 
     #return jsonify({"category" : classification , "desc" : description})
@@ -48,11 +51,12 @@ def create_custom_site_product() :
     classification = classify(product_name=product_name)
     attr = ["White", "Leather", "Unisex", "Classic design"]
     description = generate_description(product_name , category=classification["category"] , attributes=attr )
+    image = fetch_image(product_name , num=3)[0]
     product_data = {
         "product_name" : product_name , 
         "category" : classification["category"] , 
         "description" :  description , 
-        "image_url" : None
+        "image_url" : image
     }
 
 
@@ -68,5 +72,5 @@ def create_custom_site_product() :
     except Exception as e : 
         return jsonify({"msg" : "product addition failed !" , "eror" : str(e)}) , 500
     else : 
-        return jsonify({"msg" : "product added succesfuly"}) , 201
+        return jsonify({"msg" : "product added succesfuly" , "product" : product_data}) , 201
     
