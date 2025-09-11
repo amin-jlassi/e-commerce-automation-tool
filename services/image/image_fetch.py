@@ -21,7 +21,7 @@ def google_search_api(api_key, search_engine_id, query, num=5):
         return {"error": response.text}
 
 def fetch_image(product_name, num=5):
-    result = google_search_api(API_KEY, SEARCH_ENGINE_ID, "air force nike air", 3)
+    result = google_search_api(API_KEY, SEARCH_ENGINE_ID, product_name, num)
     images = [item['link'] for item in result.get("items")]
     return images
 
